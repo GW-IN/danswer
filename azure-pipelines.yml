@@ -1,5 +1,5 @@
 # Docker
-# Build a Docker image
+# Build and Push Docker image
 # https://docs.microsoft.com/azure/devops/pipelines/languages/docker
 
 trigger:
@@ -13,17 +13,28 @@ variables:
 
 stages:
 - stage: Build
-  displayName: Build image
+  displayName: Build and Push image
   jobs:
   - job: Build
-    displayName: Build
+    displayName: Build and Push Docker Image
     pool:
       vmImage: ubuntu-latest
     steps:
+    # Schritt 1: Docker Image bauen
     - task: Docker@2
       displayName: Build an image
       inputs:
         command: build
         dockerfile: '$(Build.SourcesDirectory)/backend/Dockerfile'
+        tags: |
+          $(tag)
+
+    # Schritt 2: Docker Image in die ACR pushen
+    - task: Docker@2
+      displayName: Push Docker Image
+      inputs:
+        command: push
+        containerRegistry: danswer-acr-connection
+        repository: danswer/backend
         tags: |
           $(tag)
